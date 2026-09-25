@@ -1,0 +1,37 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Download ZIP
+        uses: actions/checkout@v4
+
+      - name: Extract project
+        shell: powershell
+        run: |
+          Expand-Archive -Path *.zip -DestinationPath project -Force
+
+      - name: Find source
+        shell: powershell
+        run: |
+          Get-ChildItem project -Recurse
+
+      - name: Install MinGW
+        run: choco install mingw -y
+
+      - name: Build
+        shell: cmd
+        run: |
+          cd project
+          gcc silence_finder_cli.c -o silence_finder.exe -O2 -lm
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Silence-Trim-Finder-Windows
+          path: project/silence_finder.exe
